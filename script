@@ -1,0 +1,48 @@
+#!/bin/bash
+
+function check_error() {
+  if [ $? != 0 ]
+  then
+    echo "Failed" >&2
+    exit -1
+  fi
+}
+
+function install_package() {
+  sudo apt-get install -y $1 &>> ~/UbuntuInstallScript/logs/install.log
+  check_error
+}
+
+mkdir -p ~/UbuntuInstallScript/logs/
+date > ~/UbuntuInstallScript/logs/install.log
+
+echo "Installing real GNOME"
+echo "  GNOME Session..."
+install_package gnome-session
+echo "  GNOME Tweaks..."
+install_package gnome-tweaks
+echo "  Paper Icon Theme..."
+echo "    Adding PPA..."
+sudo add-apt-repository -uy ppa:snwh/ppa &> ~/UbuntuInstallScript/logs/install.log
+check_error
+echo "    Installing paper-icon-theme..."
+install_package paper-icon-theme
+echo "  Materia"
+install_package materia-gtk-theme
+echo "Installing Steam"
+install_package steam-installer
+echo "Downloading latest stable Vivaldi..."
+echo "  Adding deb repository..."
+echo "deb http://repo.vivaldi.com/stable/deb/ stable main" | sudo tee "/etc/apt/sources.list.d/vivaldi.list" > /dev/null
+echo "  Adding repository key..."
+wget -q -O - "http://repo.vivaldi.com/stable/linux_signing_key.pub" | sudo apt-key add - &>> ~/UbuntuInstallScript/logs/install.log
+check_error
+echo "  Updating APT database..."
+sudo apt-get update &>> ~/UbuntuInstallScript/logs/install.log
+check_error
+echo "  Installing vivaldi-stable..."
+install_package vivaldi-stable
+echo "  Done"
+
+echo "Installing Git..."
+install_package git
