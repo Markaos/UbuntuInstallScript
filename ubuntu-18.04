@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_FILE="~/UbuntuInstallScript/logs/install.log"
+LOG_FILE="$HOME/UbuntuInstallScript/logs/install.log"
 
 function check_error() {
   if [ $? != 0 ]
@@ -8,6 +8,11 @@ function check_error() {
     echo "Failed" >&2
     exit -1
   fi
+}
+
+function apt_update() {
+  sudo apt-get update &>> $LOG_FILE
+  check_error
 }
 
 function install_package() {
@@ -25,7 +30,7 @@ echo "  GNOME Tweaks..."
 install_package gnome-tweaks
 echo "  Paper Icon Theme..."
 echo "    Adding PPA..."
-sudo add-apt-repository -uy ppa:snwh/ppa &> $LOG_FILE
+sudo add-apt-repository -uy ppa:snwh/ppa &>> $LOG_FILE
 check_error
 echo "    Installing paper-icon-theme..."
 install_package paper-icon-theme
@@ -40,8 +45,7 @@ echo "  Adding repository key..."
 wget -q -O - "http://repo.vivaldi.com/stable/linux_signing_key.pub" | sudo apt-key add - &>> $LOG_FILE
 check_error
 echo "  Updating APT database..."
-sudo apt-get update &>> $LOG_FILE
-check_error
+apt_update
 echo "  Installing vivaldi-stable..."
 install_package vivaldi-stable
 echo "  Done"
@@ -52,12 +56,24 @@ echo "  Installing apt-transport-https and dirmngr..."
 install_package apt-transport-https
 install_package dirmngr
 echo "  Adding deb repository..."
-echo "deb https://download.mono-project.com/repo/ubuntu vs-xenial main" | sudo tee /etc/apt/sources.list.d/mono-official-vs.list > /dev/null
+echo "deb https://download.mono-project.com/repo/ubuntu vs-bionic main" | sudo tee /etc/apt/sources.list.d/mono-official-vs.list > /dev/null
 echo "  Adding repository key..."
 sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF &>> $LOG_FILE
 check_error
 echo "  Updating APT database..."
-sudo apt-get update &>> $LOG_FILE
-check_error
+apt_update
 echo "  Installing monodevelop..."
 install_package monodevelop
+echo "Installing Visual Studio Code..."
+echo "  Downloading latest package..."
+wget -q -O /tmp/vscode.deb "https://go.microsoft.com/fwlink/?LinkID=760868"
+check_error
+echo "  Installing the package..."
+sudo dpkg -i /tmp/vscode.deb &>> $LOG_FILE
+echo "  Installing dependencies..."
+sudo apt-get install -fy &>> $LOG_FILE
+check_error
+echo "  Removing temporary files..."
+rm /tmp/vscode.deb
+check_error
+echo "  Done"
