@@ -77,3 +77,5 @@ echo "  Removing temporary files..."
 rm /tmp/vscode.deb
 check_error
 echo "  Done"
+echo "Installing CMake..."
+install_package cmake
