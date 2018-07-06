@@ -79,3 +79,5 @@ check_error
 echo "  Done"
 echo "Installing CMake..."
 install_package cmake
+echo "Installing whois..."
+install_package whois
